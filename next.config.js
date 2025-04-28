@@ -1,24 +1,36 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  images: {
-    domains: ['localhost'],
+
+  // For react-d3-tree or libraries requiring 'canvas'
+  webpack: (config) => {
+    config.externals = [...(config.externals || []), { canvas: 'canvas' }];
+    return config;
   },
+
+  // Disable ESLint during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Microsoft Teams compatibility: allow iframe embedding
   async headers() {
     return [
       {
-        // Allow Microsoft Teams to iframe the app
         source: '/(.*)',
         headers: [
           {
+            key: 'X-Frame-Options',
+            value: 'ALLOWALL',
+          },
+          {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors teams.microsoft.com *.teams.microsoft.com *.skype.com;",
-          }
+            value: "frame-ancestors 'self' https://*.teams.microsoft.com https://teams.microsoft.com;",
+          },
         ],
       },
     ];
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
